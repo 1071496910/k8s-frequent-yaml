@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: wordpress-mysql
+  namespace: test
+  labels:
+    app: wordpress
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: mysql
+    spec:
+      hostNetwork: true
+      containers:
+      - image: reg.local:5000/common/mysql:5.7
+        name: mysql
+        env:
+          # $ kubectl create secret generic mysql-pass --from-file=password.txt
+          # make sure password.txt does not have a trailing newline
+        - name: MYSQL_ROOT_PASSWORD
+          value: "1234567"
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        hostPath:
+          path: /data/mysql
